@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Button } from "@/components/Button";
@@ -19,7 +19,7 @@ export function ComposerForm({ onGenerated }: { onGenerated: (payload: any) => v
     setLoading(true);
     setStatus("");
     try {
-      const res = await fetch("/api/briefing/generate", {
+      const res = await fetch("/api/briefing/python-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipientEmail, timeframe, region, categories })

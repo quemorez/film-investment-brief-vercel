@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { buildMockBriefing } from "@/lib/mockBriefing";
 import { sendGmailMessage } from "@/lib/gmail";
 
 export async function POST(req: NextRequest) {
@@ -18,7 +17,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Recipient email is required." }, { status: 400 });
     }
 
-    const briefing = buildMockBriefing(body);
+    const url = process.env.PYTHON_BRIEFING_API_URL;
+
+    if (!url) {
+      return NextResponse.json({ error: "PYTHON_BRIEFING_API_URL is not configured." }, { status: 500 });
+    }
+
+    const briefingRes = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const briefing = await briefingRes.json();
+
+    if (!briefingRes.ok) {
+      return NextResponse.json(
+        { error: briefing.error || "Failed to generate briefing from backend." },
+        { status: briefingRes.status }
+      );
+    }
 
     await sendGmailMessage({
       accessToken: session.accessToken,
